@@ -69,3 +69,31 @@ export function createProject({ title, description }, token) {
     body: JSON.stringify({ title, description }),
   })
 }
+
+export function getTasks(projectId, token) {
+  return request(`/api/projects/${projectId}/tasks`, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+}
+
+export function createTask(projectId, task, token) {
+  return request(`/api/projects/${projectId}/tasks`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(task),
+  })
+}
+
+export function getProject(projectId, token) {
+  return request(`/api/projects/${projectId}`, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+}

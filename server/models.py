@@ -50,3 +50,32 @@ class Project(db.Model):
             "description": self.description,
             "user_id": self.user_id,
         }
+    
+class Task(db.Model):
+    __tablename__ = "tasks"
+
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String, nullable=False)
+    description = db.Column(db.Text)
+    status = db.Column(db.String, default="todo")  # todo, in_progress, done
+    priority = db.Column(db.String, default="medium")  # low, medium, high
+    due_date = db.Column(db.Date)  # optional
+    today_focus = db.Column(db.Boolean, default=False)
+
+    project_id = db.Column(db.Integer, db.ForeignKey("projects.id"), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+
+    project = db.relationship("Project", backref=db.backref("tasks", lazy=True))
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "title": self.title,
+            "description": self.description,
+            "status": self.status,
+            "priority": self.priority,
+            "due_date": self.due_date.isoformat() if self.due_date else None,
+            "today_focus": self.today_focus,
+            "project_id": self.project_id,
+            "user_id": self.user_id,
+        }

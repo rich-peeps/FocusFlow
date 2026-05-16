@@ -3,7 +3,7 @@ from flask_migrate import Migrate
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from flask_cors import CORS
 from sqlalchemy.exc import IntegrityError
-from models import db, bcrypt, User, Project
+from models import db, bcrypt, User, Project, Task
 
 app = Flask(__name__)
 CORS(app, origins=["http://localhost:5173"])
@@ -141,7 +141,7 @@ def update_project(project_id):
 
     data = request.get_json() or {}
     if "title" in data and data["title"]:
-        project.title = data["title"]
+        project.name = data["title"]
     if "description" in data:
         project.description = data["description"]
 
@@ -162,6 +162,105 @@ def delete_project(project_id):
     db.session.delete(project)
     db.session.commit()
     return {}, 204
+
+@app.get("/api/projects/<int:project_id>/tasks")
+@jwt_required()
+def list_tasks(project_id):
+    user_id = get_current_user_id()
+    if not user_id:
+        return {"error": "Invalid token identity"}, 422
+
+    tasks = Task.query.filter_by(project_id=project_id, user_id=user_id).all()
+    return [t.to_dict() for t in tasks], 200
+
+
+@app.post("/api/projects/<int:project_id>/tasks")
+@jwt_required()
+def create_task(project_id):
+    user_id = get_current_user_id()
+    if not user_id:
+        return {"error": "Invalid token identity"}, 422
+
+    data = request.get_json() or {}
+    title = data.get("title")
+    description = data.get("description")
+    status = data.get("status", "todo")
+    priority = data.get("priority", "medium")
+    today_focus = bool(data.get("today_focus", False))
+
+    if not title:
+        return {"error": "title is required"}, 400
+
+    task = Task(
+        title=title,
+        description=description,
+        status=status,
+        priority=priority,
+        today_focus=today_focus,
+        project_id=project_id,
+        user_id=user_id,
+    )
+    db.session.add(task)
+    db.session.commit()
+    return task.to_dict(), 201
+
+
+@app.get("/api/tasks/<int:task_id>")
+@jwt_required()
+def get_task(task_id):
+    user_id = get_current_user_id()
+    if not user_id:
+        return {"error": "Invalid token identity"}, 422
+
+    task = Task.query.filter_by(id=task_id, user_id=user_id).first()
+    if not task:
+        return {"error": "Task not found"}, 404
+
+    return task.to_dict(), 200
+
+
+@app.patch("/api/tasks/<int:task_id>")
+@jwt_required()
+def update_task(task_id):
+    user_id = get_current_user_id()
+    if not user_id:
+        return {"error": "Invalid token identity"}, 422
+
+    task = Task.query.filter_by(id=task_id, user_id=user_id).first()
+    if not task:
+        return {"error": "Task not found"}, 404
+
+    data = request.get_json() or {}
+    if "title" in data and data["title"]:
+        task.title = data["title"]
+    if "description" in data:
+        task.description = data["description"]
+    if "status" in data:
+        task.status = data["status"]
+    if "priority" in data:
+        task.priority = data["priority"]
+    if "today_focus" in data:
+        task.today_focus = bool(data["today_focus"])
+
+    db.session.commit()
+    return task.to_dict(), 200
+
+
+@app.delete("/api/tasks/<int:task_id>")
+@jwt_required()
+def delete_task(task_id):
+    user_id = get_current_user_id()
+    if not user_id:
+        return {"error": "Invalid token identity"}, 422
+
+    task = Task.query.filter_by(id=task_id, user_id=user_id).first()
+    if not task:
+        return {"error": "Task not found"}, 404
+
+    db.session.delete(task)
+    db.session.commit()
+    return {}, 204
+
 
 if __name__ == "__main__":
     app.run(port=5555, debug=True)
