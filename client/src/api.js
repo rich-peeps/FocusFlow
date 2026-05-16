@@ -50,3 +50,22 @@ export function getMe(token) {
     },
   })
 }
+
+export function getProjects(token) {
+  return request('/api/projects', {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+}
+
+export function createProject({ title, description }, token) {
+  return request('/api/projects', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ title, description }),
+  })
+}
