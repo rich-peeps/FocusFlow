@@ -3,8 +3,7 @@ from flask_migrate import Migrate
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from flask_cors import CORS
 from sqlalchemy.exc import IntegrityError
-
-from models import db, bcrypt, User
+from models import db, bcrypt, User, Project
 
 app = Flask(__name__)
 CORS(app, origins=["http://localhost:5173"])
@@ -34,7 +33,7 @@ def signup():
 
     if not username or not email or not password:
         return {"error": "username, email, and password are required"}, 400
-
+    
     try:
         user = User(username=username, email=email)
         user.password_hash = password  # uses the setter to hash
@@ -79,6 +78,90 @@ def me():
         return {"error": "User not found"}, 404
     return user.to_dict(), 200
 
+def get_current_user_id():
+    user_id = get_jwt_identity()
+    try:
+        return int(user_id)
+    except (TypeError, ValueError):
+        return None
+
+
+@app.get("/api/projects")
+@jwt_required()
+def list_projects():
+    user_id = get_current_user_id()
+    if not user_id:
+        return {"error": "Invalid token identity"}, 422
+
+    projects = Project.query.filter_by(user_id=user_id).all()
+    return [p.to_dict() for p in projects], 200
+
+@app.post("/api/projects")
+@jwt_required()
+def create_project():
+    user_id = get_current_user_id()
+    if not user_id:
+        return {"error": "Invalid token identity"}, 422
+
+    data = request.get_json() or {}
+    title = data.get("title")
+    description = data.get("description")
+
+    if not title:
+        return {"error": "title is required"}, 400
+
+    project = Project(name=title, description=description, user_id=user_id)
+    db.session.add(project)
+    db.session.commit()
+    return project.to_dict(), 201
+
+@app.get("/api/projects/<int:project_id>")
+@jwt_required()
+def get_project(project_id):
+    user_id = get_current_user_id()
+    if not user_id:
+        return {"error": "Invalid token identity"}, 422
+
+    project = Project.query.filter_by(id=project_id, user_id=user_id).first()
+    if not project:
+        return {"error": "Project not found"}, 404
+
+    return project.to_dict(), 200
+
+@app.patch("/api/projects/<int:project_id>")
+@jwt_required()
+def update_project(project_id):
+    user_id = get_current_user_id()
+    if not user_id:
+        return {"error": "Invalid token identity"}, 422
+
+    project = Project.query.filter_by(id=project_id, user_id=user_id).first()
+    if not project:
+        return {"error": "Project not found"}, 404
+
+    data = request.get_json() or {}
+    if "title" in data and data["title"]:
+        project.title = data["title"]
+    if "description" in data:
+        project.description = data["description"]
+
+    db.session.commit()
+    return project.to_dict(), 200
+
+@app.delete("/api/projects/<int:project_id>")
+@jwt_required()
+def delete_project(project_id):
+    user_id = get_current_user_id()
+    if not user_id:
+        return {"error": "Invalid token identity"}, 422
+
+    project = Project.query.filter_by(id=project_id, user_id=user_id).first()
+    if not project:
+        return {"error": "Project not found"}, 404
+
+    db.session.delete(project)
+    db.session.commit()
+    return {}, 204
 
 if __name__ == "__main__":
     app.run(port=5555, debug=True)
