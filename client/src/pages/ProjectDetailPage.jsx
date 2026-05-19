@@ -94,7 +94,7 @@ function ProjectDetailPage() {
     <main style={{ maxWidth: 800, margin: '2rem auto', padding: '1rem' }}>
       <h1>{project.name}</h1>
       {project.description && <p style={{ marginTop: '0.5rem' }}>{project.description}</p>}
-
+      
       <section style={{ marginTop: '2rem' }}>
         <h2>Add Task</h2>
         <form onSubmit={handleTaskSubmit} style={{ marginTop: '0.5rem' }}>
