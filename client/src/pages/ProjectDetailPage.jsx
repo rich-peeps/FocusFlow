@@ -1,12 +1,14 @@
+// client/src/pages/ProjectDetailPage.jsx
 import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useAuth } from '../auth'
-import { getProject, getTasks, createTask } from '../api' // we'll add getProject too
+import { getProject, getTasks, createTask } from '../api'
 
 function ProjectDetailPage() {
   const { id } = useParams()
   const projectId = Number(id)
   const { user, token } = useAuth()
+
   const [project, setProject] = useState(null)
   const [tasks, setTasks] = useState([])
   const [loading, setLoading] = useState(true)
@@ -38,6 +40,7 @@ function ProjectDetailPage() {
 
   const handleTaskChange = (e) => {
     setTaskForm({ ...taskForm, [e.target.name]: e.target.value })
+    if (error) setError(null)
   }
 
   const handleTaskSubmit = async (e) => {
@@ -46,7 +49,10 @@ function ProjectDetailPage() {
     try {
       const newTask = await createTask(
         projectId,
-        { title: taskForm.title.trim(), description: taskForm.description.trim() },
+        {
+          title: taskForm.title.trim(),
+          description: taskForm.description.trim(),
+        },
         token,
       )
       setTasks((prev) => [...prev, newTask])
@@ -93,8 +99,10 @@ function ProjectDetailPage() {
   return (
     <main style={{ maxWidth: 800, margin: '2rem auto', padding: '1rem' }}>
       <h1>{project.name}</h1>
-      {project.description && <p style={{ marginTop: '0.5rem' }}>{project.description}</p>}
-      
+      {project.description && (
+        <p style={{ marginTop: '0.5rem' }}>{project.description}</p>
+      )}
+
       <section style={{ marginTop: '2rem' }}>
         <h2>Add Task</h2>
         <form onSubmit={handleTaskSubmit} style={{ marginTop: '0.5rem' }}>
@@ -121,6 +129,7 @@ function ProjectDetailPage() {
               />
             </label>
           </div>
+          {error && <p style={{ color: 'red' }}>{error}</p>}
           <button type="submit">Create Task</button>
         </form>
       </section>
