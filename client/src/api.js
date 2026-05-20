@@ -97,3 +97,22 @@ export function getProject(projectId, token) {
     },
   })
 }
+
+export function getTodayTasks(token) {
+  return request('/api/today', {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+}
+
+export function updateTask(taskId, updates, token) {
+  return request(`/api/tasks/${taskId}`, {
+    method: 'PATCH',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(updates),
+  })
+}

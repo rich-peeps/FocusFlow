@@ -4,6 +4,7 @@ from flask_jwt_extended import JWTManager, create_access_token, jwt_required, ge
 from flask_cors import CORS
 from sqlalchemy.exc import IntegrityError
 from models import db, bcrypt, User, Project, Task
+from datetime import date
 
 app = Flask(__name__)
 CORS(app, origins=["http://localhost:5173"])
@@ -217,6 +218,20 @@ def get_task(task_id):
         return {"error": "Task not found"}, 404
 
     return task.to_dict(), 200
+
+@app.get("/api/today")
+@jwt_required()
+def today_tasks():
+    user_id = get_current_user_id()
+    if not user_id:
+        return {"error": "Invalid token identity"}, 422
+    # today = date.today()
+    # tasks = Task.query.filter(
+    #     Task.user_id == user_id,
+    #     or_(Task.today_focus == True, Task.due_date == today)
+    # ).all()
+    tasks = Task.query.filter_by(user_id=user_id, today_focus=True).all()
+    return [task.to_dict() for task in tasks], 200
 
 
 @app.patch("/api/tasks/<int:task_id>")

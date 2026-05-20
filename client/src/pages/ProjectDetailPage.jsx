@@ -1,4 +1,3 @@
-// client/src/pages/ProjectDetailPage.jsx
 import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useAuth } from '../auth'
@@ -13,7 +12,11 @@ function ProjectDetailPage() {
   const [tasks, setTasks] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [taskForm, setTaskForm] = useState({ title: '', description: '' })
+  const [taskForm, setTaskForm] = useState({
+    title: '',
+    description: '',
+    today_focus: false,
+  })
 
   useEffect(() => {
     if (!token) {
@@ -39,7 +42,11 @@ function ProjectDetailPage() {
   }, [projectId, token])
 
   const handleTaskChange = (e) => {
-    setTaskForm({ ...taskForm, [e.target.name]: e.target.value })
+    const { name, type, checked, value } = e.target
+    setTaskForm({
+      ...taskForm,
+      [name]: type === 'checkbox' ? checked : value,
+    })
     if (error) setError(null)
   }
 
@@ -52,11 +59,12 @@ function ProjectDetailPage() {
         {
           title: taskForm.title.trim(),
           description: taskForm.description.trim(),
+          today_focus: taskForm.today_focus,
         },
         token,
       )
       setTasks((prev) => [...prev, newTask])
-      setTaskForm({ title: '', description: '' })
+      setTaskForm({ title: '', description: '', today_focus: false })
     } catch (err) {
       setError(err.message)
     }
@@ -127,6 +135,18 @@ function ProjectDetailPage() {
                 onChange={handleTaskChange}
                 style={{ display: 'block', width: '100%', padding: '0.4rem' }}
               />
+            </label>
+          </div>
+          <div style={{ marginBottom: '0.5rem' }}>
+            <label>
+              <input
+                type="checkbox"
+                name="today_focus"
+                checked={taskForm.today_focus}
+                onChange={handleTaskChange}
+                style={{ marginRight: '0.25rem' }}
+              />
+              Add to Today&apos;s Focus
             </label>
           </div>
           {error && <p style={{ color: 'red' }}>{error}</p>}
