@@ -16,6 +16,8 @@ function ProjectDetailPage() {
     title: '',
     description: '',
     today_focus: false,
+    status: 'todo',
+    priority: 'medium',
   })
 
   useEffect(() => {
@@ -60,11 +62,19 @@ function ProjectDetailPage() {
           title: taskForm.title.trim(),
           description: taskForm.description.trim(),
           today_focus: taskForm.today_focus,
+          status: taskForm.status,
+          priority: taskForm.priority,
         },
         token,
       )
       setTasks((prev) => [...prev, newTask])
-      setTaskForm({ title: '', description: '', today_focus: false })
+      setTaskForm({ 
+        title: '',
+        description: '',
+        today_focus: false,
+        status: 'todo',
+        priority: 'medium',
+      })
     } catch (err) {
       setError(err.message)
     }
@@ -149,11 +159,40 @@ function ProjectDetailPage() {
               Add to Today&apos;s Focus
             </label>
           </div>
+          <div style={{ marginBottom: '0.5rem' }}>
+            <label>
+              Status
+              <select
+                name="status"
+                value={taskForm.status}
+                onChange={handleTaskChange}
+                style={{ display: 'block', width: '100%', padding: '0.4rem' }}
+              >
+                <option value="todo">To Do</option>
+                <option value="in_progress">In Progress</option>
+                <option value="done">Done</option>
+              </select>
+            </label>
+          </div>
+          <div style={{ marginBottom: '0.5rem' }}>
+            <label>
+              Priority
+              <select
+                name="priority"
+                value={taskForm.priority}
+                onChange={handleTaskChange}
+                style={{ display: 'block', width: '100%', padding: '0.4rem' }}
+              >
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+              </select>
+            </label>
+          </div>
           {error && <p style={{ color: 'red' }}>{error}</p>}
           <button type="submit">Create Task</button>
         </form>
       </section>
-
       <section style={{ marginTop: '2rem' }}>
         <h2>Tasks</h2>
         {tasks.length === 0 && <p>No tasks yet.</p>}
@@ -166,8 +205,34 @@ function ProjectDetailPage() {
                 borderRadius: '4px',
                 padding: '0.75rem',
                 marginBottom: '0.5rem',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
               }}
             >
+              <div>
+                <strong
+                  style={{
+                    textDecoration: t.status === 'done' ? 'line-through' : 'none',
+                  }}
+                >
+                  {t.title}
+                </strong>
+                {t.description && (
+                  <p style={{ marginTop: '0.25rem' }}>{t.description}</p>
+                )}
+                <p style={{ margin: 0, fontSize: '0.85rem', color: '#555' }}>
+                  Status: {t.status} | Today: {t.today_focus ? 'Yes' : 'No'}
+                </p>
+              </div>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button onClick={() => handleTaskStatusToggle(t)}>
+                  {t.status === 'done' ? 'Mark ToDo' : 'Mark Done'}
+                </button>
+                <button onClick={() => handleTaskTodayToggle(t)}>
+                  {t.today_focus ? 'Remove from Today' : 'Add to Today'}
+                </button>
+              </div>
               <strong>{t.title}</strong>
               {t.description && (
                 <p style={{ marginTop: '0.25rem' }}>{t.description}</p>
