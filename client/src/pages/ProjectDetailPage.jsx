@@ -2,6 +2,30 @@ import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useAuth } from '../auth'
 import { getProject, getTasks, createTask } from '../api'
+import { updateTask } from '../api'  // make sure this is exported in api.js
+
+const handleTaskStatusToggle = async (task) => {
+  const newStatus = task.status === 'done' ? 'todo' : 'done'
+  try {
+    const updated = await updateTask(task.id, { status: newStatus }, token)
+    setTasks((prev) => prev.map((t) => (t.id === task.id ? updated : t)))
+  } catch (err) {
+    setError(err.message)
+  }
+}
+
+const handleTaskTodayToggle = async (task) => {
+  try {
+    const updated = await updateTask(
+      task.id,
+      { today_focus: !task.today_focus },
+      token,
+    )
+    setTasks((prev) => prev.map((t) => (t.id === task.id ? updated : t)))
+  } catch (err) {
+    setError(err.message)
+  }
+}
 
 function ProjectDetailPage() {
   const { id } = useParams()
