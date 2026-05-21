@@ -1,31 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useAuth } from '../auth'
-import { getProject, getTasks, createTask } from '../api'
-import { updateTask } from '../api'  // make sure this is exported in api.js
-
-const handleTaskStatusToggle = async (task) => {
-  const newStatus = task.status === 'done' ? 'todo' : 'done'
-  try {
-    const updated = await updateTask(task.id, { status: newStatus }, token)
-    setTasks((prev) => prev.map((t) => (t.id === task.id ? updated : t)))
-  } catch (err) {
-    setError(err.message)
-  }
-}
-
-const handleTaskTodayToggle = async (task) => {
-  try {
-    const updated = await updateTask(
-      task.id,
-      { today_focus: !task.today_focus },
-      token,
-    )
-    setTasks((prev) => prev.map((t) => (t.id === task.id ? updated : t)))
-  } catch (err) {
-    setError(err.message)
-  }
-}
+import { getProject, getTasks, createTask, updateTask } from '../api'
 
 function ProjectDetailPage() {
   const { id } = useParams()
@@ -36,6 +12,8 @@ function ProjectDetailPage() {
   const [tasks, setTasks] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [priorityFilter, setPriorityFilter] = useState('all')
   const [taskForm, setTaskForm] = useState({
     title: '',
     description: '',
@@ -92,7 +70,7 @@ function ProjectDetailPage() {
         token,
       )
       setTasks((prev) => [...prev, newTask])
-      setTaskForm({ 
+      setTaskForm({
         title: '',
         description: '',
         today_focus: false,
@@ -103,6 +81,35 @@ function ProjectDetailPage() {
       setError(err.message)
     }
   }
+
+  const handleTaskStatusToggle = async (task) => {
+    const newStatus = task.status === 'done' ? 'todo' : 'done'
+    try {
+      const updated = await updateTask(task.id, { status: newStatus }, token)
+      setTasks((prev) => prev.map((t) => (t.id === task.id ? updated : t)))
+    } catch (err) {
+      setError(err.message)
+    }
+  }
+
+  const handleTaskTodayToggle = async (task) => {
+    try {
+      const updated = await updateTask(
+        task.id,
+        { today_focus: !task.today_focus },
+        token,
+      )
+      setTasks((prev) => prev.map((t) => (t.id === task.id ? updated : t)))
+    } catch (err) {
+      setError(err.message)
+    }
+  }
+
+  const filteredTasks = tasks.filter((t) => {
+    const statusOk = statusFilter === 'all' || t.status === statusFilter
+    const priorityOk = priorityFilter === 'all' || t.priority === priorityFilter
+    return statusOk && priorityOk
+  })
 
   if (!user) {
     return (
@@ -217,11 +224,43 @@ function ProjectDetailPage() {
           <button type="submit">Create Task</button>
         </form>
       </section>
+
       <section style={{ marginTop: '2rem' }}>
         <h2>Tasks</h2>
-        {tasks.length === 0 && <p>No tasks yet.</p>}
+
+        {/* Filters */}
+        <div style={{ marginTop: '1rem', marginBottom: '0.5rem' }}>
+          <label style={{ marginRight: '1rem' }}>
+            Status:
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              style={{ marginLeft: '0.25rem' }}
+            >
+              <option value="all">All</option>
+              <option value="todo">To Do</option>
+              <option value="in_progress">In Progress</option>
+              <option value="done">Done</option>
+            </select>
+          </label>
+          <label>
+            Priority:
+            <select
+              value={priorityFilter}
+              onChange={(e) => setPriorityFilter(e.target.value)}
+              style={{ marginLeft: '0.25rem' }}
+            >
+              <option value="all">All</option>
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+            </select>
+          </label>
+        </div>
+
+        {filteredTasks.length === 0 && <p>No tasks match the filters.</p>}
         <ul style={{ listStyle: 'none', padding: 0, marginTop: '0.5rem' }}>
-          {tasks.map((t) => (
+          {filteredTasks.map((t) => (
             <li
               key={t.id}
               style={{
@@ -240,7 +279,7 @@ function ProjectDetailPage() {
                     textDecoration: t.status === 'done' ? 'line-through' : 'none',
                   }}
                 >
-                  {t.title}
+                  {t.title} ({t.priority})
                 </strong>
                 {t.description && (
                   <p style={{ marginTop: '0.25rem' }}>{t.description}</p>
@@ -251,16 +290,12 @@ function ProjectDetailPage() {
               </div>
               <div style={{ display: 'flex', gap: '0.5rem' }}>
                 <button onClick={() => handleTaskStatusToggle(t)}>
-                  {t.status === 'done' ? 'Mark ToDo' : 'Mark Done'}
+                  {t.status === 'done' ? 'Mark Todo' : 'Mark Done'}
                 </button>
                 <button onClick={() => handleTaskTodayToggle(t)}>
                   {t.today_focus ? 'Remove from Today' : 'Add to Today'}
                 </button>
               </div>
-              <strong>{t.title}</strong>
-              {t.description && (
-                <p style={{ marginTop: '0.25rem' }}>{t.description}</p>
-              )}
             </li>
           ))}
         </ul>
