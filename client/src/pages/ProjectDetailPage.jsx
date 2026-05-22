@@ -2,6 +2,41 @@ import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useAuth } from '../auth'
 import { getProject, getTasks, createTask, updateTask } from '../api'
+import PageLayout from '../components/PageLayout'
+import TextInput from '../components/TextInput'
+
+function TaskFilters({ statusFilter, setStatusFilter, priorityFilter, setPriorityFilter }) {
+  return (
+    <div style={{ marginTop: '1rem', marginBottom: '0.5rem' }}>
+      <label style={{ marginRight: '1rem' }}>
+        Status:
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          style={{ marginLeft: '0.25rem' }}
+        >
+          <option value="all">All</option>
+          <option value="todo">To Do</option>
+          <option value="in_progress">In Progress</option>
+          <option value="done">Done</option>
+        </select>
+      </label>
+      <label>
+        Priority:
+        <select
+          value={priorityFilter}
+          onChange={(e) => setPriorityFilter(e.target.value)}
+          style={{ marginLeft: '0.25rem' }}
+        >
+          <option value="all">All</option>
+          <option value="low">Low</option>
+          <option value="medium">Medium</option>
+          <option value="high">High</option>
+        </select>
+      </label>
+    </div>
+  )
+}
 
 function ProjectDetailPage() {
   const { id } = useParams()
@@ -113,40 +148,40 @@ function ProjectDetailPage() {
 
   if (!user) {
     return (
-      <main style={{ maxWidth: 800, margin: '2rem auto', padding: '1rem' }}>
+      <PageLayout>
         <h1>Project</h1>
         <p>You must be logged in to view this project.</p>
-      </main>
+      </PageLayout>
     )
   }
 
   if (loading) {
     return (
-      <main style={{ maxWidth: 800, margin: '2rem auto', padding: '1rem' }}>
+      <PageLayout>
         <p>Loading project...</p>
-      </main>
+      </PageLayout>
     )
   }
 
   if (error) {
     return (
-      <main style={{ maxWidth: 800, margin: '2rem auto', padding: '1rem' }}>
+      <PageLayout>
         <h1>Project</h1>
         <p style={{ color: 'red' }}>{error}</p>
-      </main>
+      </PageLayout>
     )
   }
 
   if (!project) {
     return (
-      <main style={{ maxWidth: 800, margin: '2rem auto', padding: '1rem' }}>
+      <PageLayout>
         <h1>Project not found</h1>
-      </main>
+      </PageLayout>
     )
   }
 
   return (
-    <main style={{ maxWidth: 800, margin: '2rem auto', padding: '1rem' }}>
+    <PageLayout>
       <h1>{project.name}</h1>
       {project.description && (
         <p style={{ marginTop: '0.5rem' }}>{project.description}</p>
@@ -155,18 +190,12 @@ function ProjectDetailPage() {
       <section style={{ marginTop: '2rem' }}>
         <h2>Add Task</h2>
         <form onSubmit={handleTaskSubmit} style={{ marginTop: '0.5rem' }}>
-          <div style={{ marginBottom: '0.5rem' }}>
-            <label>
-              Title
-              <input
-                type="text"
-                name="title"
-                value={taskForm.title}
-                onChange={handleTaskChange}
-                style={{ display: 'block', width: '100%', padding: '0.4rem' }}
-              />
-            </label>
-          </div>
+          <TextInput
+            label="Title"
+            name="title"
+            value={taskForm.title}
+            onChange={handleTaskChange}
+          />
           <div style={{ marginBottom: '0.5rem' }}>
             <label>
               Description
@@ -228,35 +257,12 @@ function ProjectDetailPage() {
       <section style={{ marginTop: '2rem' }}>
         <h2>Tasks</h2>
 
-        {/* Filters */}
-        <div style={{ marginTop: '1rem', marginBottom: '0.5rem' }}>
-          <label style={{ marginRight: '1rem' }}>
-            Status:
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              style={{ marginLeft: '0.25rem' }}
-            >
-              <option value="all">All</option>
-              <option value="todo">To Do</option>
-              <option value="in_progress">In Progress</option>
-              <option value="done">Done</option>
-            </select>
-          </label>
-          <label>
-            Priority:
-            <select
-              value={priorityFilter}
-              onChange={(e) => setPriorityFilter(e.target.value)}
-              style={{ marginLeft: '0.25rem' }}
-            >
-              <option value="all">All</option>
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-            </select>
-          </label>
-        </div>
+        <TaskFilters
+          statusFilter={statusFilter}
+          setStatusFilter={setStatusFilter}
+          priorityFilter={priorityFilter}
+          setPriorityFilter={setPriorityFilter}
+        />
 
         {filteredTasks.length === 0 && <p>No tasks match the filters.</p>}
         <ul style={{ listStyle: 'none', padding: 0, marginTop: '0.5rem' }}>
@@ -300,7 +306,7 @@ function ProjectDetailPage() {
           ))}
         </ul>
       </section>
-    </main>
+    </PageLayout>
   )
 }
 

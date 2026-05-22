@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth'
+import TextInput from '../components/TextInput'
+import AuthFormLayout from '../components/AuthFormLayout'
 
 function SignupPage() {
   const { signup, error, setError } = useAuth()
@@ -21,12 +23,7 @@ function SignupPage() {
     e.preventDefault()
     setLoading(true)
     try {
-      await signup({
-        username: form.username,
-        email: form.email,
-        password: form.password,
-      })
-
+      await signup(form)
       navigate('/projects')
     } catch (err) {
       setError(err.message)
@@ -36,51 +33,34 @@ function SignupPage() {
   }
 
   return (
-    <main style={{ maxWidth: 400, margin: '2rem auto', padding: '1rem' }}>
-      <h1>Sign Up</h1>
-      <form onSubmit={handleSubmit} style={{ marginTop: '1rem' }}>
-        <div style={{ marginBottom: '0.5rem' }}>
-          <label>
-            Username
-            <input
-              type="text"
-              name="username"
-              value={form.username}
-              onChange={handleChange}
-              style={{ display: 'block', width: '100%', padding: '0.4rem' }}
-            />
-          </label>
-        </div>
-        <div style={{ marginBottom: '0.5rem' }}>
-          <label>
-            Email
-            <input
-              type="email"
-              name="email"
-              value={form.email}
-              onChange={handleChange}
-              style={{ display: 'block', width: '100%', padding: '0.4rem' }}
-            />
-          </label>
-        </div>
-        <div style={{ marginBottom: '0.5rem' }}>
-          <label>
-            Password
-            <input
-              type="password"
-              name="password"
-              value={form.password}
-              onChange={handleChange}
-              style={{ display: 'block', width: '100%', padding: '0.4rem' }}
-            />
-          </label>
-        </div>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
-        <button type="submit" disabled={loading} style={{ marginTop: '0.5rem' }}>
-          {loading ? 'Creating account...' : 'Sign Up'}
-        </button>
-      </form>
-    </main>
+    <AuthFormLayout
+      title="Sign Up"
+      onSubmit={handleSubmit}
+      error={error}
+      loading={loading}
+      buttonLabel={loading ? 'Creating account...' : 'Sign Up'}
+    >
+      <TextInput
+        label="Username"
+        name="username"
+        value={form.username}
+        onChange={handleChange}
+      />
+      <TextInput
+        label="Email"
+        name="email"
+        type="email"
+        value={form.email}
+        onChange={handleChange}
+      />
+      <TextInput
+        label="Password"
+        name="password"
+        type="password"
+        value={form.password}
+        onChange={handleChange}
+      />
+    </AuthFormLayout>
   )
 }
 

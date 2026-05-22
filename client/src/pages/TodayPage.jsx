@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useAuth } from '../auth'
 import { getTodayTasks, updateTask } from '../api'
+import PageLayout from '../components/PageLayout'
 
 function TodayPage() {
   const { user, token } = useAuth()
@@ -37,7 +38,7 @@ function TodayPage() {
       setTasks((prev) =>
         prev
           .map((t) => (t.id === task.id ? updated : t))
-          .filter((t) => t.today_focus), // keep only still-today tasks
+          .filter((t) => t.today_focus),
       )
     } catch (err) {
       setError(err.message)
@@ -48,9 +49,7 @@ function TodayPage() {
     const newStatus = task.status === 'done' ? 'todo' : 'done'
     try {
       const updated = await updateTask(task.id, { status: newStatus }, token)
-      setTasks((prev) =>
-        prev.map((t) => (t.id === task.id ? updated : t)),
-      )
+      setTasks((prev) => prev.map((t) => (t.id === task.id ? updated : t)))
     } catch (err) {
       setError(err.message)
     }
@@ -58,15 +57,15 @@ function TodayPage() {
 
   if (!user) {
     return (
-      <main style={{ maxWidth: 800, margin: '2rem auto', padding: '1rem' }}>
+      <PageLayout>
         <h1>Today</h1>
         <p>You must be logged in to view your focus tasks.</p>
-      </main>
+      </PageLayout>
     )
   }
 
   return (
-    <main style={{ maxWidth: 800, margin: '2rem auto', padding: '1rem' }}>
+    <PageLayout>
       <h1>Today&apos;s Focus</h1>
 
       {loading && <p>Loading today&apos;s tasks...</p>}
@@ -119,7 +118,7 @@ function TodayPage() {
           </li>
         ))}
       </ul>
-    </main>
+    </PageLayout>
   )
 }
 

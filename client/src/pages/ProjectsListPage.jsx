@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth'
 import { getProjects, createProject } from '../api'
-import { useNavigate } from 'react-router-dom'
+import PageLayout from '../components/PageLayout'
+import TextInput from '../components/TextInput'
 
 function ProjectsListPage() {
   const { user, token } = useAuth()
@@ -30,7 +32,6 @@ function ProjectsListPage() {
     load()
   }, [token])
 
-
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value })
   }
@@ -53,32 +54,26 @@ function ProjectsListPage() {
 
   if (!user) {
     return (
-      <main style={{ maxWidth: 600, margin: '2rem auto', padding: '1rem' }}>
+      <PageLayout width={600}>
         <h1>Projects</h1>
         <p>You must be logged in to view your projects.</p>
-      </main>
+      </PageLayout>
     )
   }
 
   return (
-    <main style={{ maxWidth: 800, margin: '2rem auto', padding: '1rem' }}>
+    <PageLayout>
       <h1>Your Projects</h1>
 
       <section style={{ marginTop: '1rem' }}>
         <h2>Create a new project</h2>
         <form onSubmit={handleSubmit} style={{ marginTop: '0.5rem' }}>
-          <div style={{ marginBottom: '0.5rem' }}>
-            <label>
-              Title
-              <input
-                type="text"
-                name="title"
-                value={form.title}
-                onChange={handleChange}
-                style={{ display: 'block', width: '100%', padding: '0.4rem' }}
-              />
-            </label>
-          </div>
+          <TextInput
+            label="Title"
+            name="title"
+            value={form.title}
+            onChange={handleChange}
+          />
           <div style={{ marginBottom: '0.5rem' }}>
             <label>
               Description
@@ -120,7 +115,7 @@ function ProjectsListPage() {
           ))}
         </ul>
       </section>
-    </main>
+    </PageLayout>
   )
 }
 
