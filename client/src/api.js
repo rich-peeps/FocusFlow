@@ -116,3 +116,21 @@ export function updateTask(taskId, updates, token) {
     body: JSON.stringify(updates),
   })
 }
+
+export function deleteProject(projectId, token) {
+  return request(`/api/projects/${projectId}`, {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+}
+
+export function deleteTask(taskId, token) {
+  return request(`/api/tasks/${taskId}`, {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+}

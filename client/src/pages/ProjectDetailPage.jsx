@@ -4,6 +4,7 @@ import { useAuth } from '../auth'
 import { getProject, getTasks, createTask, updateTask } from '../api'
 import PageLayout from '../components/PageLayout'
 import TextInput from '../components/TextInput'
+import { getProject, getTasks, createTask, updateTask, deleteTask } from '../api'
 
 function TaskFilters({ statusFilter, setStatusFilter, priorityFilter, setPriorityFilter }) {
   return (
@@ -88,6 +89,16 @@ function ProjectDetailPage() {
     })
     if (error) setError(null)
   }
+
+  const handleDeleteTask = async (taskId) => {
+  try {
+    setError(null)
+    await deleteTask(taskId, token)
+    setTasks((prev) => prev.filter((t) => t.id !== taskId))
+  } catch (err) {
+    setError(err.message)
+  }
+}
 
   const handleTaskSubmit = async (e) => {
     e.preventDefault()
@@ -301,6 +312,7 @@ function ProjectDetailPage() {
                 <button onClick={() => handleTaskTodayToggle(t)}>
                   {t.today_focus ? 'Remove from Today' : 'Add to Today'}
                 </button>
+                <button onClick={() => handleDeleteTask(t.id)}>Delete</button>
               </div>
             </li>
           ))}

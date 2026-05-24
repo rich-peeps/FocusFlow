@@ -4,6 +4,7 @@ import { useAuth } from '../auth'
 import { getProjects, createProject } from '../api'
 import PageLayout from '../components/PageLayout'
 import TextInput from '../components/TextInput'
+import { getProjects, createProject, deleteProject } from '../api'
 
 function ProjectsListPage() {
   const { user, token } = useAuth()
@@ -35,6 +36,16 @@ function ProjectsListPage() {
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value })
   }
+
+  const handleDeleteProject = async (projectId) => {
+  try {
+    setError(null)
+    await deleteProject(projectId, token)
+    setProjects((prev) => prev.filter((p) => p.id !== projectId))
+  } catch (err) {
+    setError(err.message)
+  }
+}
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -107,10 +118,16 @@ function ProjectsListPage() {
               }}
               onClick={() => navigate(`/projects/${p.id}`)}
             >
+              <div
+                style={{ cursor: 'pointer' }}
+                onClick={(e) => navigate(`/projects/${p.id}`)}
+              >
               <strong>{p.name}</strong>
               {p.description && (
                 <p style={{ marginTop: '0.25rem' }}>{p.description}</p>
               )}
+              </div>
+              <button onClick={() => handleDeleteProject(p.id)}>Delete</button>
             </li>
           ))}
         </ul>
